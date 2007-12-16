@@ -1,0 +1,277 @@
+#!/usr/bin/perl
+=head1 NAME
+
+teperl -- process embedded perl in a file
+
+=head1 SYNOPSIS
+
+teperl --help | --manpage | --version
+
+teperl [ --close_delim I<string> ] [ --open_delim I<string> ]
+[ --verbose | --noverbose ] [ --prevar | --preprocess_variables ]
+[ --var_package I<name> ] { --var I<key>=I<value> } infile [ outfile ]
+
+=head1 DESCRIPTION
+
+This processes embedded perl in a file, using the Text::Template module.
+
+=head1 OPTIONS
+
+=over 4
+
+=item --close_delim I<string>
+
+Set the closing delimiter of embedded perl in the file.
+(default: 'perl?>')
+Note that the default has been set to be 'perl?>' rather than '?>'
+because, while '?>' is the definitive delimiter for
+XML processing-instructions (which is handy for processing XHTML files)
+if there are other processing-instructions in the same file
+(eg PHP) then the closing delimiter is no longer unique, and chaos ensues.
+
+=item --help
+
+Print help message and exit.
+
+=item --manpage
+
+Print the full help documentation (manual page) and exit.
+
+=item --open_delim I<string>
+
+Set the opening delimiter of embedded perl in the file.
+(default: '<?perl')
+
+=item --noverbose
+
+Do not print informational messages.
+
+=item --preprocess_variables | --prevar
+
+If this is true, then in the body of the file, all variables in
+the form of I<$(varname)> are transformed into
+I<open_delim>${I<varname>};I<close_delim> so that they are treated like
+embedded perl variables.
+
+This is useful in the cases where you want a shorthand for variables,
+or your delimiters can't be used where you want to put variables
+(for example, the file is an XML file, the delimiters are styled as
+processing instructions, and you want a variable inside an attribute,
+where processing instructions are not allowed to be)
+
+(default:off)
+
+=item --var I<key>=I<value>
+
+Variable(s) to pass in (can appear multiple times)
+
+=item --var_package I<name>
+
+A package-name to encapsulate the variables in.  This can be useful
+if some of your perl needs to reference variables from inside a
+different package (as well as being more secure).
+(default: nothing)
+
+=item --verbose
+
+Print informational messages.
+
+=item --version
+
+Print version information and exit.
+
+=back 4
+
+=head1 REQUIRES
+
+	Text::Template
+	Getopt::Long
+	Pod::Usage
+
+=head1 SEE ALSO
+
+perl(1)
+Text::Template
+Getopt::Long
+Pod::Usage
+
+=head1 AUTHOR
+
+Kathryn Andersen      http://www.katspace.com
+
+=head1 COPYRIGHT
+
+Copyright (C) 2002-2006 Kathryn Andersen
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
+
+##---------------------------------------------------------------------------##
+require 5.006;
+#################################################################
+# Globals
+#
+our $VERSION = '0.05';
+
+#################################################################
+# Includes
+use strict;
+
+use Text::Template;
+use Getopt::Long;
+use Getopt::ArgvFile qw(argvFile);
+use Pod::Usage;
+
+#################################################################
+# Subroutines
+
+sub init_data ($) {
+    my $data_ref = shift;
+
+    $data_ref->{help} = 0;
+    $data_ref->{manpage} = 0;
+    $data_ref->{version} = 0;
+    $data_ref->{verbose} = 0;
+    $data_ref->{open_delim} = '<?perl';
+    $data_ref->{close_delim} = 'perl?>';
+    $data_ref->{vars} = {};
+    $data_ref->{var_package} = '';
+    $data_ref->{preprocess_variables} = 0;
+} # init_data
+
+sub process_args ($) {
+    my $data_ref = shift;
+
+    my $ok = 1;
+
+    argvFile(startupFilename=>'.teperlrc',
+	home=>1,current=>1);
+
+    $ok = GetOptions($data_ref,
+	'help',
+	'manpage',
+	'version',
+	'verbose!',
+	'open_delim=s',
+	'close_delim=s',
+	'var_package=s',
+	'vars=s%',
+	'preprocess_variables|prevar!',
+    );
+    if (!$ok)
+    {
+	pod2usage({ -message => "$0",
+		    -exitval => 1,
+		    -verbose => 0,
+	    });
+    }
+
+    if ($data_ref->{'version'})
+    {
+	print STDERR "$0 version: $VERSION\n";
+	exit 0;
+    }
+    if ($data_ref->{'manpage'})
+    {
+	pod2usage({ -message => "$0 version $VERSION",
+		    -exitval => 0,
+		    -verbose => 2,
+	    });
+    }
+    if ($data_ref->{'help'})
+    {
+	pod2usage({ -message => "$0 version $VERSION",
+		    -exitval => 0,
+		    -verbose => 1,
+	    });
+    }
+}
+
+sub do_process {
+    my $data_ref = shift;
+    my $infile = shift;
+    my $outfile = shift;
+
+    my $in_str = '';
+    if ($infile eq '-') # read from STDIN
+    {
+	local $/;
+	$in_str = <STDIN>;
+    }
+    else {
+	if (!-f $infile) {
+	    die "File '$infile' not found!";
+	}
+	local $/;
+	open(INFILE, $infile) || die "File '$infile' not readable!";
+	$in_str = <INFILE>;
+	close INFILE;
+    }
+    my $odel = $data_ref->{open_delim};
+    my $cdel = $data_ref->{close_delim};
+    if ($data_ref->{'preprocess_variables'}) {
+	$in_str =~ s/\$\(([^)]*)\)/${odel} \${$1}; ${cdel}/g;
+    } 
+
+    my $template = Text::Template->new(TYPE=>'STRING',
+			SOURCE=>$in_str,
+			DELIMITERS=>[$data_ref->{open_delim},
+			    $data_ref->{close_delim}]
+			);
+    my $text = '';
+    my %fill_in_args = ();
+    if ($data_ref->{var_package})
+    {
+	$fill_in_args{PACKAGE} = $data_ref->{var_package};
+    }
+    if ($data_ref->{vars})
+    {
+	$fill_in_args{HASH} = $data_ref->{vars};
+    }
+    $text = $template->fill_in(%fill_in_args);
+
+    if ($outfile eq '-')
+    {
+	print $text;
+    }
+    else
+    {
+	open(OUTFILE, ">$outfile") || die "File '$outfile' not writeable!";
+	print OUTFILE $text;
+	close OUTFILE;
+    }
+}
+
+#################################################################
+# Main
+
+MAIN: {
+    my %data = ();
+
+    init_data(\%data);
+    process_args(\%data);
+
+    my $filename = '';
+    if (!$filename)
+    {
+	# now the remainder must be files
+	$filename = shift @ARGV;
+    }
+    if ($filename ne '-' && !-f $filename)
+    {
+	print STDERR "'$filename' not found\n";
+	exit 2;
+    }
+    my $outfile = '-';
+    if (@ARGV)
+    {
+	$outfile = shift @ARGV;
+    }
+
+    do_process(\%data, $filename, $outfile);
+}
+
+
+# vim: ts=8 sw=4 sts=4 ai

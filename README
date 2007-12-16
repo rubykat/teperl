@@ -1,0 +1,58 @@
+teperl 0.04
+============
+
+This is the README file for teperl, a perl script to
+process embedded perl in a file.
+
+The teperl script was written as a minimalist replacement for eperl
+<http://www.ossp.org/pkg/tool/eperl/> which hadn't changed since 1998,
+and as a consequence, failed to install on Mandrake 9.  This script
+uses the excellent Text::Template module instead.
+
+For more information on how to use the script, see the
+pod documentation via the command
+  perldoc teperl
+or, after installation, view the man pages with
+  man teperl
+
+Problems, questions, etc. may be sent to <perlkat AT katspace.com>
+
+INSTALLATION
+
+To install the script and man pages in the standard areas, 
+give the sequence of commands
+
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+If you want to install the script in your own private space, use
+
+  perl Makefile.PL PREFIX=/my/private/perllib \
+       INSTALLMAN1DIR=/my/private/perllib/man/man1 \
+       INSTALLMAN3DIR=/my/private/perllib/man/man3      
+  make
+  make test
+  make install
+
+Any libraries installed in such non-standard places may then
+need to have the appropriate path to them specified in the script.
+
+Note that `make test` may not necessarily be enabled.
+
+DEPENDENCIES
+
+This script requires these other modules:
+
+	Text::Template
+	Getopt::Long
+	Pod::Usage
+
+COPYRIGHT AND LICENCE
+
+teperl is Copyright (c) 2002-2003, by Kathryn Andersen
+All rights reserved. You may distribute this code under the terms 
+of either the GNU General Public License or the Artistic License, 
+as specified in the Perl README file.
+

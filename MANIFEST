@@ -1,0 +1,7 @@
+teperl
+Makefile.PL
+t/test.t
+README
+Changes
+MANIFEST
+META.yml                                 Module meta-data (added by MakeMaker)

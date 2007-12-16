@@ -1,0 +1,29 @@
+use ExtUtils::MakeMaker;
+#
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+#
+# If any modules outside of the core perl distribution are required,
+# these should be included as a PREREQ_PM entry in WriteMakefile below, 
+# as indicated in the example. This example requires the modules 
+# MOD1 and MOD2 to be installed, with minimal versions 1 and 5,
+# respectively. If the version number is 0, any version is sufficient.
+#
+# As well, if you wish to force a minimal perl version to run the
+# script, insert a line, for example,
+#
+#   require 5.004;
+#
+# below.
+
+WriteMakefile(
+    'NAME'	=> 'teperl',
+    'VERSION_FROM' => 'teperl', # finds $VERSION
+    'dist'  => { COMPRESS => 'gzip', SUFFIX => 'gz' },
+    'EXE_FILES' => [ 'teperl' ], # scripts to install
+    'PREREQ_PM' => { 'Text::Template' => 1.43,
+   	'Getopt::Long' => 0,
+   	'Getopt::ArgvFile' => 0,
+	},
+);
+

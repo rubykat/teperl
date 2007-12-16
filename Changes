@@ -1,0 +1,21 @@
+Revision history for Perl script teperl
+=======================================
+
+0.05  Thu Feb 2 2006
+	- just a few tweaks
+
+0.04  Fri Mar 28 2003
+	- fixed bug in --manpage option, and updated README
+
+0.03  Sat Feb 08 2003
+	- improved the short-short help
+	- added ability to output to a file, not just standard output
+	- added --var_package option
+	- changed the default closing delimiter
+
+0.02  Fri Dec 20 2002
+	- added --preprocess_variables option
+
+0.01  Fri Dec 20 2002
+	- original version; created by sdist 0.3
+
