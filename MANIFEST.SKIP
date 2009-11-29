@@ -1,0 +1,23 @@
+# Version control files and dirs.
+^\.git/
+
+# ExtUtils::MakeMaker generated files and dirs.
+^Makefile$
+^blib/
+^blibdirs$
+^pm_to_blib$
+^MakeMaker-\d
+
+# Module::Build
+^Build$
+^_build/
+
+# Temp, old, vi and emacs files.
+~$
+\.old$
+^#.*#$
+^\.#
+\.swp$
+\.bak$
+
+^\.todo$

@@ -1,6 +1,9 @@
 Revision history for Perl script teperl
 =======================================
 
+0.06  Sun Nov 29 2009
+	- changed over to use Module::Build
+
 0.05  Thu Feb 2 2006
 	- just a few tweaks
 

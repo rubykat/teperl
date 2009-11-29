@@ -1,7 +1,9 @@
 teperl
+Build.PL
 Makefile.PL
 t/test.t
 README
 Changes
 MANIFEST
-META.yml                                 Module meta-data (added by MakeMaker)
+MANIFEST.SKIP
+META.yml
